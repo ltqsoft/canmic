@@ -462,9 +462,7 @@ int main(int argc, const char** argv)
         void(const char* const, const std::string&, TangoContainer&)
     > convert = nullptr;
 
-    std::string outputFilename_suffix;
-    std::string inputFilename, outputFilename;
-    //bool inputFormat;
+    std::string inputFilename, outputFilename_suffix, outputFilename;
 
     for(int i=1; i < argc; ++i)
     {
@@ -474,16 +472,14 @@ int main(int argc, const char** argv)
             argv[i] == Opt::STR_READ_CANNA_LONG
         ){
             convert = read_canna;
-            outputFilename_suffix = "_out.txt";
-            //inputFormat = FORMAT_CANNA;
+            outputFilename_suffix = OUTPUT_FILENAME_SUFFIX_MSIME;
         //$ case: read input file as Microsoft IME dictionary.
         }else if(
             argv[i] == Opt::STR_READ_MSIME_SHORT ||
             argv[i] == Opt::STR_READ_MSIME_LONG
         ){
             convert = read_ms;
-            outputFilename_suffix = "_out.u8";
-            //inputFormat = FORMAT_MSIME;
+            outputFilename_suffix = OUTPUT_FILENAME_SUFFIX_CANNA;
         //$ case: output filename specified.
         }else if(
             argv[i] == Opt::STR_OUTPUT_FILENAME_SHORT ||
@@ -494,17 +490,16 @@ int main(int argc, const char** argv)
         //$ case: input file name specified.
         }else{
             inputFilename = argv[i];
-            const size_t lastDotIndex = inputFilename.find_last_of(".");
-            if(
-                lastDotIndex != std::string::npos &&
-                outputFilename.empty()
-            ){
-                outputFilename = inputFilename.substr(0, lastDotIndex);
-            } // no_else
         }
     }
 
-    outputFilename += outputFilename_suffix;
+    if(outputFilename.empty()) {
+        const size_t lastDotIndex = inputFilename.find_last_of(".");
+        if(lastDotIndex != std::string::npos) {
+            outputFilename.reserve(inputFilename.length() + outputFilename_suffix.length());
+            outputFilename = inputFilename.substr(0, lastDotIndex) + outputFilename_suffix;
+        } // no_else
+    }
 
 try{
     cnm_throw(convert == nullptr,

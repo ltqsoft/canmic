@@ -21,6 +21,9 @@
 #define HINSHI_STR_MSIME_SEI            u8"姓"
 #define HINSHI_STR_UNKNOWN              u8"＜不明＞"
 
+#define OUTPUT_FILENAME_SUFFIX_CANNA    "_out.u8"
+#define OUTPUT_FILENAME_SUFFIX_MSIME    "_out.txt"
+
 #define SEPARATOR           "================================\n"
 
 #endif // !CNM_STRDEF_HH
