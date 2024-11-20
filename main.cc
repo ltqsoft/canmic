@@ -36,6 +36,7 @@ SOFTWARE.
 #include <stdexcept>
 #include <string>
 //#include <utility>
+#include <cstdint>
 
 #define BOM                     0xffffffef
 #define CANNA_TEST_FILE         "../tests/kasumi-hinsi_codes-37.u8"
@@ -333,6 +334,7 @@ void read_canna(
             "\r\n";
         ++Tango::num_converted;
     }
+    // endwhile
 
     inputFile.close();
     outputFile.close();
@@ -391,7 +393,7 @@ void read_ms(
 
     while(std::getline(inputFile, line, '\n'))
     {
-        if(line[0] == '!' || has_bom(line)) {
+        if(line.empty() || line[0] == '!' || has_bom(line)) {
             std::cout << "Skipped line: " << line << '\n';
             continue;
         } // no_else
@@ -406,10 +408,10 @@ void read_ms(
         std::getline(iss,str.hinshi_str, '\t');
         std::getline(iss, str.description, '\n');
 
-        cnm_skip(str.furigana.empty());
+        cnm_skip(str.furigana.empty() || str.furigana[0] == '!');
         cnm_skip(has_vu(str.furigana));
 
-        if(str.hinshi_str.back() == '\r') {
+        if(!str.hinshi_str.empty() && str.hinshi_str.back() == '\r') {
             str.hinshi_str.resize(str.hinshi_str.length()-1);
         } // no_else
 
@@ -424,9 +426,9 @@ void read_ms(
                     '*' << t.frequency <<
                     ' ' << t.value << '\n';
                 ++Tango::num_converted;
-            }else{
+            } else {
                 std::cerr << "WARNING: invalid tango detected!\n";
-            }
+            } // endif
         } else if(str.furigana[0] != '\r') {
             std::cerr << "WARNING: unknown hinshi of entry '" <<
                 str.furigana << "'|'" << str.value << "'|'" << str.hinshi_str <<
@@ -453,9 +455,9 @@ int main(int argc, const char** argv)
         "Hinshi table incomplete!"
     );
 
-    if(argc == 1) {
+    if(argc == 1 || (argc == 2) && std::string{"--help"} == argv[1]) {
         std::cout << HELP_MSG;
-        return 0;
+        return EXIT_SUCCESS;
     } // no_else
 
     std::function<
@@ -486,7 +488,7 @@ int main(int argc, const char** argv)
             std::string(argv[i]).substr(0, Opt::STR_OUTPUT_FILENAME_LONG.length())
                 == Opt::STR_OUTPUT_FILENAME_LONG
         ){
-            outputFilename = argv[i++];
+            outputFilename = argv[++i];
         //$ case: input file name specified.
         }else{
             inputFilename = argv[i];
@@ -510,10 +512,10 @@ try{
     convert(inputFilename.c_str(), outputFilename, tangos);
 
     std::cout << "Bye.\n";
-    return 0;
+    return EXIT_SUCCESS;
 }catch(const std::runtime_error& err){
     std::cerr << err.what() << '\n';
-    return 1;
+    return EXIT_FAILURE;
 }}
 
 ///////////////////////////////////////////////////////////////
